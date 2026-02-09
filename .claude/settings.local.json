@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir \"c:\\\\Users\\\\zinge\\\\HealthPilot\")",
+      "Bash(uv sync:*)",
+      "Bash(uv run python:*)",
+      "Bash(python -c:*)"
+    ]
+  }
+}

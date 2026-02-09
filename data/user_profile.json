@@ -1,0 +1,24 @@
+{
+    "name": "David",
+    "age": 28,
+    "sex": "male",
+    "height_cm": 178,
+    "weight_kg": 80,
+    "dietary_preferences": "vegetarian",
+    "allergies": [],
+    "dietary_restrictions": [],
+    "activity_level": "moderately_active",
+    "fitness_level": "intermediate",
+    "fitness_goals": ["improve cardiovascular fitness", "build lean muscle"],
+    "daily_calorie_target": 2400,
+    "macro_targets": {
+        "protein_pct": 30,
+        "carbs_pct": 45,
+        "fat_pct": 25
+    },
+    "available_equipment": ["yoga mat", "running shoes"],
+    "preferred_exercise_times": ["morning", "evening"],
+    "sleep_goal_hours": 7.0,
+    "daily_step_goal": 10000,
+    "timezone": "Asia/Jerusalem"
+}
