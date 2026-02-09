@@ -42,6 +42,27 @@ Built as a portfolio project for roles in healthtech/biotech R&D.
 - Export meal plans (JSON, CSV, Markdown) and shopping lists (Markdown with checkboxes)
 - Detailed macros, ingredients, and prep times for each meal
 
+### 💪 Workout Planning with Calendar Integration
+- **AI-powered workout plan generation** following exercise science principles
+- **Progressive overload**: Multi-week plans with appropriate volume and intensity
+- **Personalized for fitness level**: Beginner, intermediate, advanced
+- **Goal-specific programming**: Strength, hypertrophy, endurance, weight loss, flexibility
+- **Equipment-aware**: Generates plans based on available equipment (bodyweight, dumbbells, barbell, etc.)
+- **Exercise library**: Form cues, common mistakes, variations for safe execution
+- **Calendar sync**: Bulk schedule workouts to Google Calendar with timezone support
+- **Export formats**: JSON, CSV, Markdown, iCalendar (.ics)
+
+### 👤 User Profile & Data Management
+- **Profile page**: UI for managing personal data (no manual JSON editing!)
+  - Basic info: Name, age, sex, height, weight, timezone
+  - Fitness settings: Level, goals, equipment, activity level
+  - Preferences: Calorie target, sleep goal, dietary restrictions
+- **Data upload page**: Upload your own health data through the UI
+  - Activity data (steps, distance, calories, active minutes)
+  - Heart rate data (timestamp, BPM)
+  - Sleep data (bedtime, wake time, duration, quality)
+  - Download CSV templates, validate uploads, preview data
+
 ### 🔍 RAG Knowledge Base
 - 1000+ foods from USDA FoodData Central with full nutritional profiles
 - 500+ PubMed research abstracts on nutrition and exercise science
@@ -179,14 +200,22 @@ healthpilot/
 ├── data/                   # Health data & user profile
 │   ├── sample/             # Synthetic CSV data
 │   └── user_profile.json   # User preferences
-├── pages/                  # Streamlit multi-page app (3 pages)
+├── pages/                  # Streamlit multi-page app (6 pages)
+│   ├── 0_Profile.py        # User profile management UI
 │   ├── 1_Chat.py           # AI assistant with citations & wellness cards
 │   ├── 2_Dashboard.py      # Health analytics dashboard
-│   └── 3_Meal_Plan.py      # Meal planning with shopping lists
+│   ├── 3_Meal_Plan.py      # Meal planning with shopping lists
+│   ├── 4_Workout_Plan.py   # Workout planning with calendar sync
+│   └── 5_Data_Management.py # Upload activity/HR/sleep CSV data
 ├── meal_planning/          # Meal plan generation & export
 │   ├── generator.py        # AI-powered meal plan generation
 │   ├── exporter.py         # Export to JSON, CSV, Markdown
 │   └── shopping_list.py    # Grocery list generation with categorization
+├── workout_planning/       # Workout plan generation & export
+│   ├── generator.py        # AI-powered workout plan generation (LLM + exercise science)
+│   ├── exporter.py         # Export to JSON, CSV, Markdown, iCalendar
+│   ├── exercise_library.py # Exercise reference database (form cues, variations)
+│   └── calendar_integration.py # Timezone-aware Google Calendar bulk scheduling
 ├── streamlit_app.py        # Main app entry point
 ├── config.py               # Centralized configuration
 └── pyproject.toml          # uv dependencies
