@@ -25,13 +25,25 @@
    cp .env.example .env
    ```
 
-   Edit `.env` and add:
+   Edit `.env` and configure your LLM provider:
+
+   **Option A: OpenAI (Recommended for cost)**
    ```env
-   ANTHROPIC_API_KEY=sk-ant-...      # Required for agents
-   OPENAI_API_KEY=sk-...              # Required for embeddings
+   LLM_PROVIDER=openai
+   LLM_MODEL=gpt-4o-mini
+   OPENAI_API_KEY=sk-...              # Required for chat AND embeddings
    LANGCHAIN_TRACING_V2=true          # Optional: LangSmith
-   LANGCHAIN_API_KEY=lsv2_...         # Optional: LangSmith
-   USDA_API_KEY=...                   # Optional: for live USDA data
+   LANGSMITH_API_KEY=lsv2_...         # Optional: LangSmith
+   ```
+
+   **Option B: Anthropic Claude**
+   ```env
+   LLM_PROVIDER=anthropic
+   LLM_MODEL=claude-sonnet-4-20250514
+   ANTHROPIC_API_KEY=sk-ant-...       # Required for agents
+   OPENAI_API_KEY=sk-...              # Required for embeddings only
+   LANGCHAIN_TRACING_V2=true          # Optional: LangSmith
+   LANGSMITH_API_KEY=lsv2_...         # Optional: LangSmith
    ```
 
 4. **Generate sample data**:
@@ -81,13 +93,16 @@
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `ANTHROPIC_API_KEY` | Yes | - | Claude API key |
-| `ANTHROPIC_MODEL` | No | claude-sonnet-4-20250514 | Model to use |
-| `OPENAI_API_KEY` | Yes (for RAG) | - | OpenAI embeddings key |
+| `LLM_PROVIDER` | No | anthropic | LLM provider: "anthropic" or "openai" |
+| `LLM_MODEL` | No | claude-sonnet-4-20250514 | Model name (e.g., gpt-4o-mini, claude-sonnet-4-20250514) |
+| `LLM_MAX_TOKENS` | No | 4096 | Max tokens per response |
+| `LLM_TEMPERATURE` | No | 0.3 | Creativity (0.0-1.0) |
+| `ANTHROPIC_API_KEY` | If using Claude | - | Anthropic API key |
+| `OPENAI_API_KEY` | Yes | - | OpenAI API key (for chat if LLM_PROVIDER=openai, always needed for embeddings) |
 | `OPENAI_EMBEDDING_MODEL` | No | text-embedding-3-small | Embedding model |
 | `CHROMA_PERSIST_DIRECTORY` | No | ./data/chroma_db | ChromaDB storage path |
-| `LANGCHAIN_TRACING_V2` | No | false | Enable LangSmith |
-| `LANGCHAIN_API_KEY` | No | - | LangSmith API key |
+| `LANGCHAIN_TRACING_V2` | No | false | Enable LangSmith tracing |
+| `LANGSMITH_API_KEY` | If using LangSmith | - | LangSmith API key (replaces deprecated LANGCHAIN_API_KEY) |
 | `LANGCHAIN_PROJECT` | No | healthpilot | LangSmith project name |
 | `USDA_API_KEY` | No | DEMO_KEY | USDA API key |
 | `LOG_LEVEL` | No | INFO | Logging level |
@@ -119,12 +134,25 @@
 
 3. **Configure Secrets**:
    - In Streamlit Cloud dashboard → Settings → Secrets
-   - Add your `.env` contents (TOML format):
+   - Add your configuration (TOML format):
+
+   **Using OpenAI (cheaper):**
    ```toml
-   ANTHROPIC_API_KEY = "sk-ant-..."
+   LLM_PROVIDER = "openai"
+   LLM_MODEL = "gpt-4o-mini"
    OPENAI_API_KEY = "sk-..."
    LANGCHAIN_TRACING_V2 = "true"
-   LANGCHAIN_API_KEY = "lsv2_..."
+   LANGSMITH_API_KEY = "lsv2_..."
+   ```
+
+   **Using Anthropic Claude:**
+   ```toml
+   LLM_PROVIDER = "anthropic"
+   LLM_MODEL = "claude-sonnet-4-20250514"
+   ANTHROPIC_API_KEY = "sk-ant-..."
+   OPENAI_API_KEY = "sk-..."  # Still needed for embeddings
+   LANGCHAIN_TRACING_V2 = "true"
+   LANGSMITH_API_KEY = "lsv2_..."
    ```
 
 4. **Generate data on first run**:

@@ -7,6 +7,7 @@ All API keys use SecretStr to prevent accidental logging exposure.
 from __future__ import annotations
 
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Literal
@@ -53,9 +54,9 @@ class Settings(BaseSettings):
     google_calendar_id: str = "primary"
 
     # --- LangSmith Observability ---
+    # LangSmith uses LANGSMITH_API_KEY as of 2024+
     langsmith_api_key: SecretStr = Field(default=SecretStr(""))
     langchain_tracing_v2: bool = False
-    langchain_api_key: SecretStr = Field(default=SecretStr(""))
     langchain_project: str = "healthpilot"
 
     # --- USDA ---
@@ -87,7 +88,7 @@ class Settings(BaseSettings):
     def has_langsmith(self) -> bool:
         """Check if LangSmith tracing is configured."""
         return self.langchain_tracing_v2 and bool(
-            self.langchain_api_key.get_secret_value()
+            self.langsmith_api_key.get_secret_value()
         )
 
 
@@ -126,3 +127,24 @@ def setup_logging() -> None:
     # Suppress noisy third-party loggers
     for logger_name in ("httpx", "chromadb", "streamlit", "httpcore", "urllib3"):
         logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+
+def setup_langsmith() -> None:
+    """Configure LangSmith tracing if enabled.
+
+    LangChain reads from environment variables, so we need to set them explicitly.
+    Call this once at startup, before creating any LLM instances.
+    """
+    settings = get_settings()
+
+    if settings.has_langsmith():
+        # Set environment variables for LangChain to pick up
+        os.environ["LANGSMITH_API_KEY"] = settings.langsmith_api_key.get_secret_value()
+        os.environ["LANGCHAIN_TRACING_V2"] = "true"
+        os.environ["LANGCHAIN_PROJECT"] = settings.langchain_project
+
+        logger = logging.getLogger(__name__)
+        logger.info("LangSmith tracing enabled for project: %s", settings.langchain_project)
+    else:
+        # Ensure tracing is disabled if not configured
+        os.environ["LANGCHAIN_TRACING_V2"] = "false"

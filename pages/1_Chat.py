@@ -264,13 +264,29 @@ st.caption("Powered by Claude + LangGraph multi-agent system")
 # Check API key
 settings = get_settings()
 if not settings.has_llm_key():
-    st.error(f"{settings.llm_provider.upper()} API key not configured.")
-    if settings.llm_provider == "anthropic":
-        st.info("Add `ANTHROPIC_API_KEY` to your `.env` file to enable the chat interface.")
-        st.code("ANTHROPIC_API_KEY=sk-ant-...", language="bash")
-    else:
-        st.info("Add `OPENAI_API_KEY` to your `.env` file to enable the chat interface.")
-        st.code("OPENAI_API_KEY=sk-...", language="bash")
+    st.error(f"LLM API key not configured (current provider: {settings.llm_provider})")
+
+    st.markdown("### 🔑 Configure Your LLM Provider")
+    st.markdown("HealthPilot supports **Anthropic Claude** or **OpenAI GPT** models.")
+
+    tab1, tab2 = st.tabs(["🤖 Use OpenAI (Recommended for Cost)", "🔮 Use Anthropic Claude"])
+
+    with tab1:
+        st.markdown("**OpenAI GPT** - Fast and affordable")
+        st.code("""LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o-mini
+OPENAI_API_KEY=sk-...""", language="bash")
+        st.caption("Cost: ~$0.15 per 1M input tokens")
+
+    with tab2:
+        st.markdown("**Anthropic Claude** - Most capable reasoning")
+        st.code("""LLM_PROVIDER=anthropic
+LLM_MODEL=claude-sonnet-4-20250514
+ANTHROPIC_API_KEY=sk-ant-...""", language="bash")
+        st.caption("Cost: ~$3 per 1M input tokens")
+
+    st.divider()
+    st.info("💡 Add these to your `.env` file (local) or **Streamlit Cloud Secrets** (deployed)")
     st.stop()
 
 # Initialize session state

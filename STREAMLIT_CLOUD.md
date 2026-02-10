@@ -50,20 +50,37 @@ Before the app starts, configure your API keys:
 2. Go to **Settings** → **Secrets**
 3. Add your secrets in TOML format:
 
+**Option A: Use OpenAI (Recommended - Cheaper)**
 ```toml
-# Required: Claude API (powers all AI features)
-ANTHROPIC_API_KEY = "sk-ant-api03-your-key-here"
+# LLM Provider
+LLM_PROVIDER = "openai"
+LLM_MODEL = "gpt-4o-mini"
 
-# Required: OpenAI API (for embeddings and RAG)
+# Required: OpenAI API (for chat AND embeddings)
 OPENAI_API_KEY = "sk-your-openai-key-here"
 
 # Optional: LangSmith for debugging (recommended)
 LANGCHAIN_TRACING_V2 = "true"
-LANGCHAIN_API_KEY = "lsv2_your_langsmith_key"
+LANGSMITH_API_KEY = "lsv2_your_langsmith_key"
 LANGCHAIN_PROJECT = "healthpilot"
+```
 
-# Optional: USDA API (uses DEMO_KEY if not provided)
-# USDA_API_KEY = "your-usda-key"
+**Option B: Use Anthropic Claude**
+```toml
+# LLM Provider
+LLM_PROVIDER = "anthropic"
+LLM_MODEL = "claude-sonnet-4-20250514"
+
+# Required: Claude API (for chat)
+ANTHROPIC_API_KEY = "sk-ant-your-key-here"
+
+# Required: OpenAI API (for embeddings only)
+OPENAI_API_KEY = "sk-your-openai-key-here"
+
+# Optional: LangSmith for debugging (recommended)
+LANGCHAIN_TRACING_V2 = "true"
+LANGSMITH_API_KEY = "lsv2_your_langsmith_key"
+LANGCHAIN_PROJECT = "healthpilot"
 ```
 
 4. **Click "Save"**
@@ -124,15 +141,23 @@ Enable Streamlit Cloud analytics in Settings → Analytics
 
 **Free Tier Usage** (for demo/portfolio):
 - Streamlit Cloud: **Free** (1 public app)
-- Claude API: **$5 free credit** (~1,000 messages)
+- OpenAI GPT-4o-mini: **Free tier** (limited usage)
 - OpenAI Embeddings: **~$0.02 total** (ChromaDB pre-populated)
 - Total: **$0/month** (within free tiers)
 
-**Public Usage** (100 users/month):
-- Claude API: **~$3/month** (1,000 messages × 1000 tokens each)
-- OpenAI Embeddings: **~$0** (already embedded)
-- Streamlit Cloud: **Free** or **$20/month** for custom domain
-- Total: **~$3-23/month**
+**Public Usage** (100 users, 1,000 messages/month):
+
+**Option A: OpenAI GPT-4o-mini** (Recommended for cost)
+- LLM (GPT-4o-mini): **~$0.15/month** (1M input tokens = 1,000 messages)
+- Embeddings: **~$0** (already embedded)
+- Streamlit Cloud: **Free**
+- **Total: ~$0.15/month** 💰
+
+**Option B: Anthropic Claude Sonnet**
+- LLM (Claude Sonnet 4.5): **~$3/month** (1M input tokens)
+- Embeddings: **~$0** (already embedded)
+- Streamlit Cloud: **Free**
+- **Total: ~$3/month**
 
 ## 🐛 Troubleshooting
 

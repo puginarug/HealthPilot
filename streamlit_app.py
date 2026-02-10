@@ -11,9 +11,10 @@ from pathlib import Path
 
 import streamlit as st
 
-from config import get_settings, setup_logging
+from config import get_settings, setup_logging, setup_langsmith
 
 setup_logging()
+setup_langsmith()
 logger = logging.getLogger(__name__)
 
 # Page configuration
