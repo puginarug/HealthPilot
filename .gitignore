@@ -22,8 +22,8 @@ env/
 *.swp
 *.swo
 
-# ChromaDB
-data/chroma_db/
+# ChromaDB (commented out to include in repo for Streamlit Cloud deployment)
+# data/chroma_db/
 
 # OS
 .DS_Store
