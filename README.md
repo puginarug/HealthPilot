@@ -2,7 +2,7 @@
 
 **Multi-agent AI health assistant powered by LangGraph and Claude**
 
-Portfolio project demonstrating multi-agent orchestration, RAG pipelines, health data analytics, and full-stack ML engineering.
+Portfolio project demonstrating multi-agent orchestration, web search integration with academic filtering, health data analytics, and full-stack ML engineering.
 
 ---
 
@@ -10,9 +10,9 @@ Portfolio project demonstrating multi-agent orchestration, RAG pipelines, health
 
 HealthPilot is an intelligent health assistant that combines:
 - **Multi-agent architecture** using LangGraph to coordinate specialized agents
-- **RAG (Retrieval-Augmented Generation)** with USDA FoodData Central and PubMed research
+- **Academic web search** with Tavily API filtering for USDA, NIH, PubMed, and peer-reviewed sources
 - **Health analytics** with interactive dashboards analyzing wearable device data
-- **Modern ML stack** (Claude API, ChromaDB, LangChain, Streamlit)
+- **Modern ML stack** (Claude/GPT APIs, Tavily, LangChain, Streamlit)
 
 Built as a portfolio project for roles in healthtech/biotech R&D.
 
@@ -21,10 +21,10 @@ Built as a portfolio project for roles in healthtech/biotech R&D.
 ## Features
 
 ### 🤖 Multi-Agent Chat Interface
-- **Nutrition Agent**: Evidence-based dietary advice backed by USDA nutritional data and PubMed research
+- **Nutrition Agent**: Evidence-based dietary advice backed by real-time web search of USDA, NIH, and PubMed
 - **Exercise Agent**: Workout planning and activity analysis using wearable health data
 - **Wellbeing Agent**: Sleep analysis and schedule management guidance
-- **RAG Citations**: Automatic source attribution with clickable PubMed/USDA links
+- **Academic Source Citations**: Automatic source attribution with clickable URLs from credible academic sources
 - **Wellness Action Cards**: Add wellness activities to calendar or send email reminders
 
 ### 📊 Health Analytics Dashboard
@@ -63,11 +63,6 @@ Built as a portfolio project for roles in healthtech/biotech R&D.
   - Sleep data (bedtime, wake time, duration, quality)
   - Download CSV templates, validate uploads, preview data
 
-### 🔍 RAG Knowledge Base
-- 1000+ foods from USDA FoodData Central with full nutritional profiles
-- 500+ PubMed research abstracts on nutrition and exercise science
-- Semantic search with automatic source attribution (FDC IDs, PMIDs)
-
 ### 📅 Optional Integrations (No Setup Required)
 - **Google Calendar**: Add wellness activities to calendar (OAuth2)
 - **Email Reminders**: SMTP-based wellness reminders (Gmail, Outlook, etc.)
@@ -84,21 +79,21 @@ graph TB
     Router -->|nutrition| NA[Nutrition Agent]
     Router -->|exercise| EA[Exercise Agent]
     Router -->|wellbeing| WA[Wellbeing Agent]
-    NA --> Tools1[RAG Search Tools]
+    NA --> Tools1[Web Search Tools]
     EA --> Tools2[Analytics Tools]
     WA --> Tools3[Sleep Analysis Tools]
-    Tools1 --> ChromaDB[(ChromaDB<br/>Vector Store)]
+    Tools1 --> Tavily[(Tavily API<br/>Academic Search)]
     Tools2 --> Data[(Health Data<br/>CSV Files)]
     Tools3 --> Data
-    NA --> Claude[Claude API]
-    EA --> Claude
-    WA --> Claude
+    NA --> LLM[Claude/GPT API]
+    EA --> LLM
+    WA --> LLM
 ```
 
 **Key Design Decisions:**
 - **Flat LangGraph** for simplicity (3 agents don't need nested graphs)
-- **ChromaDB PersistentClient** for local vector storage (no separate DB process)
-- **OpenAI embeddings** (text-embedding-3-small) for cost-effective RAG
+- **Tavily web search** with academic domain filtering for credible sources
+- **Real-time search** instead of static knowledge base (always up-to-date information)
 - **LLM-based intent router** for flexible classification
 - **Tool-based agent architecture** via LangChain
 
@@ -112,8 +107,7 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed architecture.
 |-----------|-----------|
 | **Agent Framework** | LangGraph, LangChain |
 | **LLM** | Flexible: Anthropic Claude or OpenAI GPT (via factory pattern) |
-| **Vector Store** | ChromaDB (local, persistent) |
-| **Embeddings** | OpenAI `text-embedding-3-small` |
+| **Web Search** | Tavily API (academic domain filtering) |
 | **Data Analysis** | pandas, numpy, scipy |
 | **Visualization** | Plotly |
 | **Frontend** | Streamlit |
@@ -130,8 +124,8 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed architecture.
 - Python 3.11-3.13
 - [uv](https://docs.astral.sh/uv/) package manager
 - API keys:
-  - [Anthropic Claude API](https://console.anthropic.com/)
-  - [OpenAI API](https://platform.openai.com/api-keys) (for embeddings)
+  - **LLM**: [Anthropic Claude API](https://console.anthropic.com/) OR [OpenAI API](https://platform.openai.com/api-keys)
+  - **Web Search**: [Tavily API](https://tavily.com) (free tier: 1000 searches/month)
   - (Optional) [LangSmith](https://smith.langchain.com/) for tracing
 
 ### Installation
@@ -157,24 +151,12 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed architecture.
    uv run python data/generate_sample_data.py
    ```
 
-5. **Populate RAG knowledge base** (requires OpenAI API key):
-   ```bash
-   # USDA foods (~1000 foods, ~5 min)
-   uv run python -m rag.ingest --source usda --limit 1000
-
-   # PubMed abstracts (~500 abstracts, ~10 min)
-   uv run python -m rag.ingest --source pubmed --limit 100
-
-   # Or ingest both:
-   uv run python -m rag.ingest --source all
-   ```
-
-6. **Run the app**:
+5. **Run the app**:
    ```bash
    uv run streamlit run streamlit_app.py
    ```
 
-7. **Open in browser**: http://localhost:8501
+6. **Open in browser**: http://localhost:8501
 
 ---
 
@@ -184,14 +166,10 @@ See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for detailed architecture.
 healthpilot/
 ├── agents/                 # Multi-agent system
 │   ├── orchestrator.py     # LangGraph routing
-│   ├── nutrition_agent.py  # RAG-powered nutrition expert
+│   ├── nutrition_agent.py  # Web search-powered nutrition expert
 │   ├── exercise_agent.py   # Activity data analyst
 │   ├── wellbeing_agent.py  # Sleep & schedule advisor
-│   └── tools/              # Agent tools (RAG search, analytics)
-├── rag/                    # Retrieval-Augmented Generation
-│   ├── retriever.py        # ChromaDB + semantic search
-│   ├── ingest.py           # Data ingestion CLI
-│   └── sources/            # USDA & PubMed loaders
+│   └── tools/              # Agent tools (web search, analytics)
 ├── analytics/              # Health data analysis
 │   ├── data_pipeline.py    # CSV loading & validation
 │   ├── health_metrics.py   # Statistical computations
@@ -225,10 +203,10 @@ healthpilot/
 
 ## Usage Examples
 
-### 1. Chat with RAG Citations
+### 1. Chat with Academic Source Citations
 Navigate to **Chat** page and ask:
-- *"What are high protein vegetarian foods?"* → See USDA citations with FDC IDs
-- *"What does research say about Mediterranean diet?"* → See PubMed citations with PMIDs
+- *"What are high protein vegetarian foods?"* → Real-time search of USDA database with source URLs
+- *"What does research say about Mediterranean diet?"* → PubMed research with clickable citations
 - *"I'm feeling stressed, what should I do?"* → Get wellness suggestions with calendar/email buttons
 - *"Analyze my activity for the past week"* → Exercise agent computes trends
 - *"How is my sleep quality?"* → Wellbeing agent analyzes sleep patterns
@@ -264,7 +242,7 @@ uv run pytest
 uv run ruff check . --fix
 
 # Type checking
-uv run mypy agents analytics rag
+uv run mypy agents analytics
 ```
 
 ### View Agent Traces
@@ -296,10 +274,10 @@ See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for:
 
 **Current features:**
 - ✅ Multi-agent chat with intelligent routing
-- ✅ RAG citations with source attribution (PubMed PMIDs, USDA FDC IDs)
+- ✅ Academic source citations with URLs from credible sources (NIH, CDC, PubMed, USDA, .edu)
+- ✅ Real-time web search with Tavily academic filtering
 - ✅ Wellness action cards (calendar/email integration)
 - ✅ Health data analytics dashboard with data upload
-- ✅ RAG with USDA + PubMed knowledge bases
 - ✅ Meal plan generation with personalized nutrition targets
 - ✅ Shopping list generation with category organization
 - ✅ Google Calendar integration (optional, OAuth2)
@@ -323,8 +301,8 @@ MIT License
 
 ## Acknowledgments
 
-- **USDA FoodData Central** for nutritional data API
-- **NCBI E-utilities** for PubMed access
+- **Tavily** for academic web search API
 - **Anthropic** for Claude API
+- **OpenAI** for GPT API
 - **LangChain** and **LangGraph** for agent frameworks
 - **Streamlit** for rapid UI development
