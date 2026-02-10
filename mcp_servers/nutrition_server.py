@@ -1,6 +1,7 @@
 """MCP Server for nutrition and dietary tools.
 
-Provides RAG-powered nutrition knowledge access via USDA and PubMed.
+Provides meal planning tools. Web search tools for nutrition knowledge
+are now in web_search_server.py.
 """
 
 from __future__ import annotations
@@ -10,35 +11,28 @@ import logging
 from agents.tools.nutrition_tools import (
     export_meal_plan_json,
     generate_meal_plan,
-    lookup_food_nutrients,
-    search_dietary_research,
-    search_nutrition_knowledge,
 )
 
 logger = logging.getLogger(__name__)
 
 
 class NutritionServer:
-    """MCP server providing nutrition and dietary information.
+    """MCP server providing meal planning tools.
 
     Tools:
-    - search_nutrition_knowledge: Search USDA + PubMed
-    - lookup_food_nutrients: Get specific food data
-    - search_dietary_research: Query research abstracts
     - generate_meal_plan: Create personalized meal plans
     - export_meal_plan_json: Export meal plan to file
+
+    Note: Nutrition knowledge search tools are now in web_search_server.py
     """
 
     name = "nutrition"
-    description = "Access nutritional data from USDA FoodData Central and PubMed research"
+    description = "Generate personalized meal plans with nutritional tracking"
 
     @staticmethod
     def get_tools() -> list:
         """Return all tools provided by this server."""
         return [
-            search_nutrition_knowledge,
-            lookup_food_nutrients,
-            search_dietary_research,
             generate_meal_plan,
             export_meal_plan_json,
         ]

@@ -1,6 +1,7 @@
 """Nutrition agent tools.
 
-Tools for searching nutritional data, accessing research, and meal planning.
+Tools for meal planning and nutrition tracking (non-RAG).
+Web search tools are now in web_search_tools.py.
 """
 
 from __future__ import annotations
@@ -11,124 +12,7 @@ from datetime import date
 
 from langchain_core.tools import tool
 
-from config import get_settings
-from rag.retriever import HealthRetriever
-
 logger = logging.getLogger(__name__)
-
-
-@tool
-def search_nutrition_knowledge(query: str, top_k: int = 5) -> str:
-    """Search the USDA and PubMed nutrition knowledge base.
-
-    Use this tool to find:
-    - Nutritional information about specific foods
-    - Evidence-based dietary guidance from research
-    - Health benefits of nutrients or diets
-
-    Args:
-        query: A nutrition-related question or food item (e.g., "high protein foods",
-               "Mediterranean diet benefits", "vitamin D sources").
-        top_k: Number of results to return (default 5).
-
-    Returns:
-        Relevant nutrition information with source citations (USDA FDC IDs, PubMed PMIDs).
-    """
-    try:
-        retriever = HealthRetriever(top_k=top_k)
-        docs = retriever.retrieve(
-            query,
-            collections=["nutrition_docs", "pubmed_abstracts"],
-            top_k=top_k,
-        )
-
-        if not docs:
-            return (
-                f"No results found for '{query}'. The knowledge base may not be populated yet. "
-                f"Run `python -m rag.ingest --source all` to load nutrition data."
-            )
-
-        context = retriever.format_context(docs, max_length=3000)
-        logger.info("Retrieved %d nutrition sources for query: %s", len(docs), query[:50])
-        return context
-
-    except Exception as e:
-        logger.error("Nutrition search failed: %s", e)
-        return f"Error searching nutrition knowledge base: {e}"
-
-
-@tool
-def lookup_food_nutrients(food_name: str) -> str:
-    """Look up detailed nutrient information for a specific food.
-
-    Args:
-        food_name: Name of the food (e.g., "chicken breast", "brown rice", "avocado").
-
-    Returns:
-        Detailed nutrient breakdown per 100g including calories, protein, fat,
-        carbs, vitamins, and minerals from USDA FoodData Central.
-    """
-    try:
-        retriever = HealthRetriever(top_k=3)
-        docs = retriever.retrieve(
-            food_name,
-            collections=["nutrition_docs"],  # USDA only
-            top_k=3,
-        )
-
-        if not docs:
-            return (
-                f"Food '{food_name}' not found in database. Try a more general name or "
-                f"ensure the USDA data is loaded (python -m rag.ingest --source usda)."
-            )
-
-        context = retriever.format_context(docs, max_length=2000)
-        logger.info("Looked up nutrients for: %s", food_name)
-        return context
-
-    except Exception as e:
-        logger.error("Food lookup failed: %s", e)
-        return f"Error looking up food: {e}"
-
-
-@tool
-def search_dietary_research(topic: str, top_k: int = 3) -> str:
-    """Search PubMed research abstracts on nutrition topics.
-
-    Use this for evidence-based guidance on:
-    - Dietary patterns (e.g., ketogenic, Mediterranean)
-    - Nutrient effects and mechanisms
-    - Diet-disease relationships
-
-    Args:
-        topic: Research topic (e.g., "omega-3 cardiovascular health",
-               "fiber gut microbiome").
-        top_k: Number of abstracts to return (default 3).
-
-    Returns:
-        PubMed abstracts with PMIDs and publication details.
-    """
-    try:
-        retriever = HealthRetriever(top_k=top_k)
-        docs = retriever.retrieve(
-            topic,
-            collections=["pubmed_abstracts"],  # PubMed only
-            top_k=top_k,
-        )
-
-        if not docs:
-            return (
-                f"No research found on '{topic}'. Run `python -m rag.ingest --source pubmed` "
-                f"to load PubMed abstracts."
-            )
-
-        context = retriever.format_context(docs, max_length=3000)
-        logger.info("Retrieved %d research abstracts for: %s", len(docs), topic[:50])
-        return context
-
-    except Exception as e:
-        logger.error("Research search failed: %s", e)
-        return f"Error searching research: {e}"
 
 
 @tool

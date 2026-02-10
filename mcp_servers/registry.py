@@ -11,6 +11,7 @@ from typing import Any
 
 from mcp_servers.health_data_server import health_data_server
 from mcp_servers.nutrition_server import nutrition_server
+from mcp_servers.web_search_server import web_search_server
 from mcp_servers.wellness_server import wellness_server
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ class MCPRegistry:
             nutrition_server,
             health_data_server,
             wellness_server,
+            web_search_server,
         ]
         logger.info("Initialized MCP registry with %d servers", len(self.servers))
 

@@ -19,6 +19,7 @@ from agents.tools.exercise_tools import (
     read_google_calendar,
 )
 from agents.tools.shared_tools import get_user_profile
+from agents.tools.web_search_tools import search_exercise_guidance
 from config import get_settings
 from llm_factory import create_chat_llm
 
@@ -32,9 +33,26 @@ and help users plan workouts that fit their schedule and fitness level.
 
 ## Your Capabilities
 - Analyze wearable data (steps, heart rate, activity trends)
+- Search credible academic sources for exercise guidance
 - Provide evidence-based exercise recommendations
 - Identify fitness patterns and suggest improvements
-- (Future) Schedule workouts in Google Calendar
+- Schedule workouts in Google Calendar
+
+## CRITICAL SOURCE CREDIBILITY REQUIREMENT
+When using web search tools, you MUST only cite information from credible academic and medical sources:
+- Peer-reviewed journals (PubMed, Nature, BMJ, NEJM, etc.)
+- Government health agencies (NIH, CDC, WHO, FDA)
+- Professional fitness organizations (ACSM, NSCA)
+- Academic medical institutions (.edu domains)
+- Established medical organizations (Mayo Clinic, Cleveland Clinic, etc.)
+
+NEVER cite:
+- Commercial fitness blogs or wellness sites
+- Social media content
+- Unverified health news sites
+
+Always include source URLs in your responses using this format:
+"According to [Source Name] (URL), [finding]..."
 
 ## Guidelines
 1. **Data-driven recommendations**: Always analyze the user's actual activity data
@@ -104,6 +122,7 @@ Would you like me to create a specific weekly plan?"
 EXERCISE_TOOLS = [
     analyze_activity_data,
     analyze_heart_rate_data,
+    search_exercise_guidance,
     get_exercise_recommendations,
     read_google_calendar,
     create_calendar_event,

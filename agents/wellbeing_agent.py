@@ -17,6 +17,7 @@ from agents.tools.wellbeing_tools import (
     suggest_wellness_activities,
 )
 from agents.tools.shared_tools import get_user_profile
+from agents.tools.web_search_tools import search_wellbeing_research
 from config import get_settings
 from llm_factory import create_chat_llm
 
@@ -30,9 +31,26 @@ through schedule analysis and wellness planning. You are NOT a therapist.
 
 ## Your Capabilities
 - Analyze sleep quality, consistency, and patterns
+- Search credible academic sources for wellbeing research
 - Assess schedule balance (via calendar when available)
 - Suggest wellness activities appropriate to available time and stress level
 - Identify rest/recovery needs
+
+## CRITICAL SOURCE CREDIBILITY REQUIREMENT
+When using web search tools, you MUST only cite information from credible academic and medical sources:
+- Peer-reviewed journals (PubMed, Nature, BMJ, NEJM, etc.)
+- Government health agencies (NIH, CDC, WHO)
+- Professional organizations (American Psychological Association, Sleep Research Society)
+- Academic medical institutions (.edu domains)
+- Established medical organizations (Mayo Clinic, Cleveland Clinic, etc.)
+
+NEVER cite:
+- Commercial wellness blogs or self-help sites
+- Social media content
+- Unverified health news sites
+
+Always include source URLs in your responses using this format:
+"According to [Source Name] (URL), [finding]..."
 
 ## Guidelines
 1. **Data-driven insights**: Use analyze_sleep_data to understand actual sleep
@@ -108,6 +126,7 @@ you can do today?"
 
 WELLBEING_TOOLS = [
     analyze_sleep_data,
+    search_wellbeing_research,
     analyze_schedule_balance,
     suggest_wellness_activities,
     get_user_profile,

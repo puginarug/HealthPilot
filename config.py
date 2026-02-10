@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     # --- USDA ---
     usda_api_key: SecretStr = Field(default=SecretStr(""))
 
+    # --- Tavily Web Search ---
+    tavily_api_key: SecretStr = Field(default=SecretStr(""))
+
     # --- Data ---
     sample_data_dir: Path = Path("./data/sample")
     user_profile_path: Path = Path("./data/user_profile.json")
@@ -90,6 +93,10 @@ class Settings(BaseSettings):
         return self.langchain_tracing_v2 and bool(
             self.langsmith_api_key.get_secret_value()
         )
+
+    def has_tavily_key(self) -> bool:
+        """Check if a valid Tavily API key is configured."""
+        return bool(self.tavily_api_key.get_secret_value())
 
 
 # Module-level singleton

@@ -1,7 +1,7 @@
-"""Nutrition agent with RAG-powered food and diet expertise.
+"""Nutrition agent with web search-powered food and diet expertise.
 
-Provides evidence-based dietary guidance backed by USDA FoodData Central
-and PubMed research.
+Provides evidence-based dietary guidance backed by credible academic sources
+including USDA FoodData Central, PubMed research, and government health agencies.
 """
 
 from __future__ import annotations
@@ -13,11 +13,15 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import SystemMessage
 
 from agents.tools.nutrition_tools import (
+    export_meal_plan_json,
+    generate_meal_plan,
+)
+from agents.tools.shared_tools import get_user_profile
+from agents.tools.web_search_tools import (
     lookup_food_nutrients,
     search_dietary_research,
     search_nutrition_knowledge,
 )
-from agents.tools.shared_tools import get_user_profile
 from config import get_settings
 from llm_factory import create_chat_llm
 
@@ -27,13 +31,29 @@ NUTRITION_SYSTEM_PROMPT = """You are the Nutrition Agent of HealthPilot, an AI h
 
 ## Your Role
 You are a knowledgeable nutrition expert providing evidence-based dietary guidance.
-You have access to USDA FoodData Central nutritional data and PubMed research abstracts.
+You have access to credible academic sources including USDA FoodData Central,
+PubMed research, NIH, CDC, and peer-reviewed medical journals.
 
 ## Your Capabilities
 - Search comprehensive nutritional databases for food nutrient profiles
 - Access peer-reviewed research on nutrition topics
 - Provide meal suggestions based on user goals and restrictions
 - Calculate nutritional totals and assess dietary balance
+
+## CRITICAL SOURCE CREDIBILITY REQUIREMENT
+When using web search tools, you MUST only cite information from credible academic and medical sources:
+- Peer-reviewed journals (PubMed, Nature, BMJ, NEJM, etc.)
+- Government health agencies (NIH, CDC, WHO, FDA, USDA)
+- Academic medical institutions (.edu domains)
+- Established medical organizations (Mayo Clinic, Cleveland Clinic, etc.)
+
+NEVER cite:
+- Commercial health blogs or wellness sites
+- Social media content
+- Unverified health news sites
+
+Always include source URLs in your responses using this format:
+"According to [Source Name] (URL), [finding]..."
 
 ## Guidelines
 1. **Always ground advice in data**: Use your tools (search_nutrition_knowledge, lookup_food_nutrients,
@@ -82,6 +102,8 @@ NUTRITION_TOOLS = [
     search_nutrition_knowledge,
     lookup_food_nutrients,
     search_dietary_research,
+    generate_meal_plan,
+    export_meal_plan_json,
     get_user_profile,
 ]
 

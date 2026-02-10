@@ -3,12 +3,11 @@ langgraph>=0.2
 langchain>=0.3
 langchain-anthropic>=0.3
 langchain-openai>=0.2
-langchain-chroma>=0.2
 langchain-text-splitters>=0.3
 langsmith>=0.2
 
-# Vector store
-chromadb>=0.5
+# Web search
+tavily-python>=0.3
 
 # Data & analytics
 pandas>=2.2
