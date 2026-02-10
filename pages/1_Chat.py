@@ -259,10 +259,11 @@ HealthPilot AI Health Assistant
 
 
 st.header("AI Chat")
-st.caption("Powered by Claude + LangGraph multi-agent system")
 
-# Check API key
+# Check API key and show which provider is being used
 settings = get_settings()
+provider_display = "Claude" if settings.llm_provider == "anthropic" else "OpenAI GPT"
+st.caption(f"Powered by {provider_display} + LangGraph multi-agent system")
 if not settings.has_llm_key():
     st.error(f"LLM API key not configured (current provider: {settings.llm_provider})")
 

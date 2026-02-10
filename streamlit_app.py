@@ -49,13 +49,17 @@ with st.sidebar:
 
     # API key status
     st.subheader("Status")
-    has_anthropic = settings.has_anthropic_key()
+    has_llm = settings.has_llm_key()
     has_openai = settings.has_openai_key()
     has_langsmith = settings.has_langsmith()
 
-    st.write(f"Claude API: {'Connected' if has_anthropic else 'Not configured'}")
-    st.write(f"Embeddings: {'Connected' if has_openai else 'Not configured'}")
-    st.write(f"LangSmith: {'Active' if has_langsmith else 'Inactive'}")
+    # Show configured LLM provider
+    llm_provider_name = "Claude" if settings.llm_provider == "anthropic" else "OpenAI"
+    llm_status = f"{llm_provider_name} ({settings.llm_model})"
+
+    st.write(f"**LLM:** {llm_status if has_llm else '⚠️ Not configured'}")
+    st.write(f"**Embeddings:** {'✅ OpenAI' if has_openai else '⚠️ Not configured'}")
+    st.write(f"**LangSmith:** {'✅ Active' if has_langsmith else 'Inactive'}")
 
 # Define pages (6-page structure)
 profile_page = st.Page("pages/0_Profile.py", title="Profile", icon=":material/person:")
