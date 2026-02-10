@@ -6,6 +6,9 @@ readme = "README.md"
 requires-python = ">=3.11,<3.14"
 license = {text = "MIT"}
 
+[tool.setuptools]
+package-mode = false
+
 dependencies = [
     # Agent framework
     "langgraph>=0.2",
@@ -72,10 +75,3 @@ warn_unused_configs = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --tb=short"
-
-[tool.hatch.build.targets.wheel]
-packages = ["agents", "analytics", "rag"]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
