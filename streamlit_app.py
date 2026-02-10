@@ -50,7 +50,7 @@ with st.sidebar:
     # API key status
     st.subheader("Status")
     has_llm = settings.has_llm_key()
-    has_openai = settings.has_openai_key()
+    has_tavily = settings.has_tavily_key()
     has_langsmith = settings.has_langsmith()
 
     # Show configured LLM provider
@@ -58,7 +58,7 @@ with st.sidebar:
     llm_status = f"{llm_provider_name} ({settings.llm_model})"
 
     st.write(f"**LLM:** {llm_status if has_llm else '⚠️ Not configured'}")
-    st.write(f"**Embeddings:** {'✅ OpenAI' if has_openai else '⚠️ Not configured'}")
+    st.write(f"**Web Search:** {'✅ Tavily' if has_tavily else '⚠️ Not configured'}")
     st.write(f"**LangSmith:** {'✅ Active' if has_langsmith else 'Inactive'}")
 
 # Define pages (6-page structure)

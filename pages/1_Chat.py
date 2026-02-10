@@ -23,10 +23,10 @@ logger = logging.getLogger(__name__)
 def extract_citations(messages: list) -> list[dict]:
     """Extract citations from ToolMessage objects.
 
-    Looks for patterns like:
-    - [PMID: 12345] for PubMed articles
-    - [FDC ID: 67890] for USDA food items
-    - [Source: ...] for other references
+    Looks for patterns from web search results:
+    - [Source N: Title]
+      URL: https://...
+      Relevance: 0.95
 
     Args:
         messages: List of message objects from orchestrator.
@@ -42,52 +42,56 @@ def extract_citations(messages: list) -> list[dict]:
 
         content = str(msg.content)
 
-        # Extract PubMed citations
-        pmid_pattern = r'\[PMID:\s*(\d+)\]'
-        for match in re.finditer(pmid_pattern, content):
-            pmid = match.group(1)
-            # Try to extract title (usually on same line or nearby)
-            title_match = re.search(rf'\[PMID:\s*{pmid}\].*?["\']([^"\']+)["\']', content)
-            title = title_match.group(1) if title_match else f"PubMed Article {pmid}"
-
-            citations.append({
-                "source": "pubmed",
-                "pmid": pmid,
-                "title": title,
-                "url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
-            })
-
-        # Extract USDA FDC citations (format: [USDA FDC ID: 12345])
-        fdc_pattern = r'\[USDA\s+FDC\s+ID:\s*(\d+)\]'
-        for match in re.finditer(fdc_pattern, content):
-            fdc_id = match.group(1)
-            # Try to extract food name (look for text before the FDC marker on same line)
-            food_match = re.search(rf'([^\n\[]+)\s*\[USDA\s+FDC\s+ID:\s*{fdc_id}\]', content)
-            food_name = food_match.group(1).strip() if food_match else f"Food Item {fdc_id}"
-
-            citations.append({
-                "source": "usda",
-                "fdc_id": fdc_id,
-                "food_name": food_name,
-                "url": f"https://fdc.nal.usda.gov/fdc-app.html#/food-details/{fdc_id}/nutrients"
-            })
-
-        # Extract generic source citations
-        source_pattern = r'\[Source:\s*([^\]]+)\]'
+        # Extract web search citations (new format from Tavily)
+        # Pattern: [Source N: Title]\nURL: https://...\nRelevance: 0.XX
+        source_pattern = r'\[Source \d+:\s*([^\]]+)\]\s*\n\s*URL:\s*(https?://[^\s]+)\s*\n\s*Relevance:\s*([\d.]+)'
         for match in re.finditer(source_pattern, content):
-            source_text = match.group(1).strip()
+            title = match.group(1).strip()
+            url = match.group(2).strip()
+            relevance = float(match.group(3))
+
+            # Determine source type from URL
+            if "pubmed.ncbi.nlm.nih.gov" in url or "pmc.ncbi.nlm.nih.gov" in url:
+                source_type = "pubmed"
+            elif "usda.gov" in url or "fdc.nal.usda.gov" in url:
+                source_type = "usda"
+            elif "nih.gov" in url:
+                source_type = "nih"
+            elif "cdc.gov" in url:
+                source_type = "cdc"
+            elif ".edu" in url:
+                source_type = "academic"
+            else:
+                source_type = "other"
+
             citations.append({
-                "source": "other",
-                "text": source_text
+                "source": source_type,
+                "title": title,
+                "url": url,
+                "relevance": relevance
             })
 
-    # Remove duplicates based on source identifiers
+        # Also extract URLs that appear inline in AI responses (fallback)
+        # Pattern: According to [Source Name] (URL)
+        inline_pattern = r'According to ([^(]+)\s*\((https?://[^)]+)\)'
+        for match in re.finditer(inline_pattern, content):
+            source_name = match.group(1).strip()
+            url = match.group(2).strip()
+
+            citations.append({
+                "source": "inline",
+                "title": source_name,
+                "url": url,
+                "relevance": None
+            })
+
+    # Remove duplicates based on URL
     seen = set()
     unique_citations = []
     for cite in citations:
-        key = (cite["source"], cite.get("pmid") or cite.get("fdc_id") or cite.get("text"))
-        if key not in seen:
-            seen.add(key)
+        url = cite.get("url")
+        if url and url not in seen:
+            seen.add(url)
             unique_citations.append(cite)
 
     return unique_citations
@@ -295,10 +299,9 @@ if "chat_messages" not in st.session_state:
     st.session_state.chat_messages = []
     # Add welcome message
     welcome = AIMessage(content=(
-        "Hi! I'm HealthPilot, your AI health assistant. I can help you with:\n\n"
-        "**Nutrition** - Food recommendations, meal planning, nutritional info (powered by USDA data)\n"
-        "**Exercise** - Workout planning, activity analysis, fitness guidance\n"
-        "**Wellbeing** - Sleep analysis, stress management, schedule balance\n\n"
+        "Hi! I'm HealthPilot, your AI health assistant.\n\n"
+        "I provide evidence-based guidance on **nutrition, exercise, and wellbeing** "
+        "using real-time web search of credible academic sources (USDA, NIH, PubMed, CDC, .edu institutions).\n\n"
         "What would you like to know?"
     ))
     st.session_state.chat_messages.append(welcome)
@@ -356,19 +359,38 @@ if user_input := st.chat_input("Ask about nutrition, exercise, or wellbeing...")
                     if citations:
                         with st.expander("📚 Sources & Citations", expanded=False):
                             for i, cite in enumerate(citations, 1):
-                                if cite["source"] == "pubmed":
-                                    st.markdown(
-                                        f"**{i}. PubMed Research** - [{cite['title']}]({cite['url']})"
-                                    )
-                                    st.caption(f"PMID: {cite['pmid']}")
-                                elif cite["source"] == "usda":
-                                    st.markdown(
-                                        f"**{i}. USDA Nutrition Data** - {cite['food_name']}"
-                                    )
-                                    st.markdown(f"[View Details]({cite['url']})")
-                                    st.caption(f"FDC ID: {cite['fdc_id']}")
-                                else:
-                                    st.markdown(f"**{i}.** {cite['text']}")
+                                source_type = cite["source"]
+
+                                # Icon mapping for source types
+                                source_icons = {
+                                    "pubmed": "🔬",
+                                    "usda": "🌾",
+                                    "nih": "🏛️",
+                                    "cdc": "🏥",
+                                    "academic": "🎓",
+                                    "other": "📄",
+                                    "inline": "🔗"
+                                }
+                                icon = source_icons.get(source_type, "📄")
+
+                                # Source name mapping
+                                source_names = {
+                                    "pubmed": "PubMed Research",
+                                    "usda": "USDA Nutrition Database",
+                                    "nih": "NIH - National Institutes of Health",
+                                    "cdc": "CDC - Centers for Disease Control",
+                                    "academic": "Academic Institution",
+                                    "other": "Academic Source",
+                                    "inline": "Reference"
+                                }
+                                source_name = source_names.get(source_type, "Source")
+
+                                # Display citation
+                                st.markdown(f"{icon} **{i}. {source_name}**")
+                                st.markdown(f"[{cite['title']}]({cite['url']})")
+
+                                if cite.get("relevance"):
+                                    st.caption(f"Relevance: {cite['relevance']:.2f}")
 
                                 if i < len(citations):
                                     st.divider()

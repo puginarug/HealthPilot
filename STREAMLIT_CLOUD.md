@@ -56,8 +56,11 @@ Before the app starts, configure your API keys:
 LLM_PROVIDER = "openai"
 LLM_MODEL = "gpt-4o-mini"
 
-# Required: OpenAI API (for chat AND embeddings)
+# Required: OpenAI API (for chat)
 OPENAI_API_KEY = "sk-your-openai-key-here"
+
+# Required: Tavily API (for web search)
+TAVILY_API_KEY = "tvly-your-tavily-key-here"
 
 # Optional: LangSmith for debugging (recommended)
 LANGCHAIN_TRACING_V2 = "true"
@@ -74,8 +77,8 @@ LLM_MODEL = "claude-sonnet-4-20250514"
 # Required: Claude API (for chat)
 ANTHROPIC_API_KEY = "sk-ant-your-key-here"
 
-# Required: OpenAI API (for embeddings only)
-OPENAI_API_KEY = "sk-your-openai-key-here"
+# Required: Tavily API (for web search)
+TAVILY_API_KEY = "tvly-your-tavily-key-here"
 
 # Optional: LangSmith for debugging (recommended)
 LANGCHAIN_TRACING_V2 = "true"
@@ -94,7 +97,7 @@ Your app will be live at: `https://your-subdomain.streamlit.app`
 ## 🎉 What Works Out of the Box
 
 ✅ **Multi-agent chat** with Nutrition, Exercise, and Wellbeing agents
-✅ **RAG citations** from USDA FoodData and PubMed research (pre-populated database included)
+✅ **Academic source citations** from real-time web search (USDA, NIH, PubMed, CDC, .edu institutions)
 ✅ **Meal planner** with shopping lists
 ✅ **Workout planner** with calendar export
 ✅ **Health analytics dashboard** with sample data
@@ -108,10 +111,10 @@ Your app will be live at: `https://your-subdomain.streamlit.app`
 - Uploaded CSV health data **will not persist**
 - Workaround: Download your profile/data regularly, or use the app for testing only
 
-### 2. **Pre-Populated Data**
-- ChromaDB vector store (36MB) is committed to the repo and will work immediately
+### 2. **Pre-Populated Sample Data**
 - Sample health data (90 days) is included in `data/sample/`
 - Users can upload their own data, but it won't persist
+- Note: No database required - web search provides real-time information
 
 ### 3. **Google Calendar Integration**
 - Requires OAuth2 setup with Google Cloud Console
@@ -142,22 +145,22 @@ Enable Streamlit Cloud analytics in Settings → Analytics
 **Free Tier Usage** (for demo/portfolio):
 - Streamlit Cloud: **Free** (1 public app)
 - OpenAI GPT-4o-mini: **Free tier** (limited usage)
-- OpenAI Embeddings: **~$0.02 total** (ChromaDB pre-populated)
+- Tavily Web Search: **Free tier** (1000 searches/month)
 - Total: **$0/month** (within free tiers)
 
-**Public Usage** (100 users, 1,000 messages/month):
+**Public Usage** (100 users, 1,000 messages/month, ~500 searches):
 
 **Option A: OpenAI GPT-4o-mini** (Recommended for cost)
 - LLM (GPT-4o-mini): **~$0.15/month** (1M input tokens = 1,000 messages)
-- Embeddings: **~$0** (already embedded)
+- Tavily Search: **~$0.50/month** (500 searches at $0.001/search)
 - Streamlit Cloud: **Free**
-- **Total: ~$0.15/month** 💰
+- **Total: ~$0.65/month** 💰
 
 **Option B: Anthropic Claude Sonnet**
 - LLM (Claude Sonnet 4.5): **~$3/month** (1M input tokens)
-- Embeddings: **~$0** (already embedded)
+- Tavily Search: **~$0.50/month** (500 searches at $0.001/search)
 - Streamlit Cloud: **Free**
-- **Total: ~$3/month**
+- **Total: ~$3.50/month**
 
 ## 🐛 Troubleshooting
 
@@ -166,9 +169,9 @@ Enable Streamlit Cloud analytics in Settings → Analytics
 - **Common issue**: Missing secrets (API keys not configured)
 - **Solution**: Add secrets in Settings → Secrets
 
-### "ChromaDB collection not found"
-- **Cause**: ChromaDB not included in repo
-- **Solution**: Ensure `data/chroma_db/` is NOT in `.gitignore` and is committed
+### "Tavily API key not configured"
+- **Cause**: Tavily API key not set in secrets
+- **Solution**: Add `TAVILY_API_KEY` to Streamlit Cloud secrets (Settings → Secrets)
 
 ### "Anthropic API key not configured"
 - **Cause**: Secrets not set correctly
